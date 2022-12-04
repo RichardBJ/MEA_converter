@@ -1,11 +1,16 @@
+[FileName,PathName] = uigetfile('*.mat','Select the files to import','MultiSelect','on');
+FileName = cellstr(FileName);
+curfile=fullfile(PathName,FileName{1});
 
 %% Where matlab.mat is the name of your exported Axion file
+%% See Readme for data source
 %% and electrodes are the names of your electrodes
-load('matlab.mat');
+load(curfile);
 % This will basically include a structure "x" that has everything in it
 % Remember electrodes named by their x y grid, i.e., there is no electrode 1
-electrodes={'14','41'};
+electrodes={'14','41','64'};
 % or just do all of 'em
+
 % Note, will skip "Ref" electrode
 all=true;
 
@@ -16,8 +21,8 @@ if all == false
         do_trode(electrodes(i), x);
     end
 else
-     for i=1:length(labels(1,:))
-        trode=cell2mat(labels(1,i));
+     for i=1:length(x.Labels(1,:))
+        trode=cell2mat(x.Labels(2,i));
         if strcmp(trode,'Ref')
             continue
         else
@@ -27,7 +32,7 @@ else
 end
 
 
-function do_trode(electrode,x)
+function output = do_trode(electrode,x)
     labels=x.Labels(2,:);
     lek = find(contains(labels,electrode));
     si = length(x.AllTimeData)/max(x.AllTimeData);
@@ -47,7 +52,7 @@ function do_trode(electrode,x)
     spikechan(tp)=1;
     master=[x.AllTimeData',data,spikechan];
     hold off
-    pause(1);
+    pause(0.5);
     %lab=num2str(lek);
     compat=str2double(electrode);
     if compat<10
@@ -58,6 +63,7 @@ function do_trode(electrode,x)
     disp(['Writing ',filename])
     dlmwrite(filename, master, 'delimiter', ',', 'precision', 9);
     disp(['Apparent success with ',filename])
+    output=master;
 end
 
 
